@@ -267,11 +267,18 @@ class TestRUToken(GenericTokenTest):
 
         tok = self.deploy_tok(accounts[0])
         tx1 = self.mint_funds(tok, a1, totalmint)
+        print(totalmint)
 
         orig_eth_balance = a1.balance()
         tx2 = tok.burn(txnum, msg(a1))
         new_token_balance = tok.balanceOf(a1, msg(0))
         new_eth_balance = a1.balance()
+        print(new_token_balance)
+        print(extranum)
+        print(new_eth_balance)
+        print(txnum )
+        print( price)
+        print( orig_eth_balance + txnum * price)
         assert new_token_balance == extranum
         assert new_eth_balance == orig_eth_balance + txnum * price
 

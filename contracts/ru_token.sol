@@ -13,6 +13,9 @@ contract RUToken is IERC20, IERC20Metadata {
      * Maximum number of mintable tokens.
      */
     uint public maxTokens;
+    uint public _totalSupply;
+    mapping(address => uint) public _balanceOf;
+    mapping(address => mapping(address => uint)) public _allowance;
 
     /**
      * Price required to mint a token in ETH
@@ -23,6 +26,7 @@ contract RUToken is IERC20, IERC20Metadata {
     constructor(uint _tokenPrice, uint _maxTokens) {
         tokenPrice = _tokenPrice;
         maxTokens = _maxTokens;
+        _totalSupply = 0;
     }
 
     /**
@@ -45,14 +49,14 @@ contract RUToken is IERC20, IERC20Metadata {
      * @dev Returns the amount of tokens in existence.
      */
     function totalSupply() external view returns (uint256) {
-        // TODO: Implement
+        return _totalSupply;
     }
 
     /**
      * @dev Returns the amount of tokens owned by `account`.
      */
     function balanceOf(address account) public view override returns (uint256) {
-        // TODO: Implement
+        return _balanceOf[account];
     }
 
 
@@ -64,7 +68,10 @@ contract RUToken is IERC20, IERC20Metadata {
      * Emits a {Transfer} event.
      */
     function transfer(address recipient, uint256 amount) external override returns (bool) {
-        // TODO: Implement
+        _balanceOf[msg.sender] -= amount;
+        _balanceOf[recipient] += amount;
+        emit Transfer(msg.sender, recipient, amount);
+        return true;
     }
 
     /**
@@ -75,7 +82,7 @@ contract RUToken is IERC20, IERC20Metadata {
      * This value changes when {approve} or {transferFrom} are called.
      */
     function allowance(address owner, address spender) external view override returns (uint256) {
-        // TODO: Implement
+        return _allowance[owner][spender];
     }
 
     /**
@@ -93,7 +100,9 @@ contract RUToken is IERC20, IERC20Metadata {
      * Emits an {Approval} event.
      */
     function approve(address spender, uint256 amount) external override returns (bool) {
-        // TODO: Implement
+        _allowance[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
     }
 
     /**
@@ -106,7 +115,11 @@ contract RUToken is IERC20, IERC20Metadata {
      * Emits a {Transfer} event.
      */
     function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
-        // TODO: Implement
+        _allowance[sender][msg.sender] -= amount;
+        _balanceOf[sender] -= amount;
+        _balanceOf[recipient] += amount;
+        emit Transfer(sender, recipient, amount);
+        return true;
     }
 
     /**
@@ -114,14 +127,22 @@ contract RUToken is IERC20, IERC20Metadata {
      * The total number of tokens minted is the msg value divided by tokenPrice.
      */
     function mint() public payable returns (uint) {
-        // TODO: Implement
+        if(_totalSupply >= maxTokens){
+            emit Transfer(address(0), msg.sender, 0);
+        }
+        _balanceOf[msg.sender] += (msg.value / tokenPrice);
+        _totalSupply += (msg.value / tokenPrice);
+        emit Transfer(address(0), msg.sender, (msg.value / tokenPrice));
     }
 
     /**
      * Burn `amount` tokens. The corresponding value (`tokenPrice` for each token) is sent to the caller.
      */
     function burn(uint amount) public {
-        // TODO: Implement
+        _balanceOf[msg.sender] -= amount;
+        _totalSupply -= amount;
+        emit Transfer(msg.sender, address(0), amount);
     }
+    
 
 }
